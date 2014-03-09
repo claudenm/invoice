@@ -1,5 +1,7 @@
 import cgi
 import os
+import logging
+from datetime import datetime
 
 from google.appengine.api import users
 from google.appengine.ext import webapp
@@ -8,9 +10,8 @@ from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 
 class Invoice(db.Model):
-    content = db.StringProperty(multiline=True)
+    description = db.StringProperty(multiline=True)
     date_added = db.DateTimeProperty(auto_now_add=True)
-    date_created =db.DateTimeProperty()
     sent = db.BooleanProperty()
     void = db.BooleanProperty()
     
@@ -18,13 +19,14 @@ class Invoice(db.Model):
 class LineItem(db.Model):
     units_billed=db.FloatProperty()
     unit = db.StringProperty(choices= ('hour','hours', 'day', 'days'))
+    rate = db.FloatProperty()
     date_worked = db.DateTimeProperty()
     invoice = db.ReferenceProperty(Invoice,collection_name='invoice' )
     
 class MainPage(webapp.RequestHandler):
     def get(self):
-        invoices_query = Invoice.all().order('-date')
-        invoices = greetings_query.fetch(10)
+        invoices_query = Invoice.all().order('-date_added')
+        invoices = invoices_query.fetch(10)
         
         if users.get_current_user():
             url = users.create_logout_url(self.request.uri)
@@ -46,7 +48,7 @@ class MainPage(webapp.RequestHandler):
 class Invoices(webapp.RequestHandler):
     def get(self):
         invoices_query = Invoice.all().order('-date')
-        invoices = invoices.fetch(10)
+        invoices = invoice_query.fetch(10)
         
         
         template_values = {
@@ -55,29 +57,59 @@ class Invoices(webapp.RequestHandler):
         path = os.path.join(os.path.dirname(__file__), 'index.html')
         self.response.out.write(template.render(path, template_values))
 
-        
+#Create Invoice
 class AddInvoice(webapp.RequestHandler):
-    def post(self):
-        Invoice = Greeting()
-        
-        if users.get_current_user():
-            greeting.author = users.get_current_user()
-        
-        greeting.content = self.request.get('content')
-        greeting.put()
-        self.redirect('/')
-
-class EditInvoice(webbapp.RequestHandler):
+    
     def get(self):
-        pass
+        template_values = {
+            'units' : LineItem.unit.choices
+        }
+
+        path = os.path.join(os.path.dirname(__file__), 'invoices.html')
+        self.response.out.write(template.render(path, template_values))
 
     def post(self):
-        pass
+        invoice = Invoice()
+        invoice.description = self.request.get('description')
+        invoice.put()
+        
+        lineitem = LineItem()
+        logging.error( 'WTF - ' + str(self.request))
+        lineitem.units_billed = float(self.request.get('units_billed'))
+        lineitem.rate = float(self.request.get('rate'))
+        lineitem.units = self.request.get('units')
+        lineitem.date_worked = datetime.strptime(self.request.get('date'), '%d/%m/%Y')
+        lineitem.invoice = invoice
+        lineitem.put()
+        self.redirect('/invoices')
+
+#Edit Invoice
+class EditInvoice(webapp.RequestHandler):
+    def get(self):
+        line_items = LineItem.all().filter(invoice=Invoice.get_by_id(request.id))
+        template_values = {
+            'units' : LineItem.unit.choices,
+            'items' : line_items
+        }
+        path = os.path.join(os.path.dirname(__file__), 'index.html')
+        self.response.out.write(template.render(path, template_values))
+    
+
+    def post(self):
+        invoice=Invoice.get_by_id(request.id)
+        lineitem = LineItem()
+        lineitem.units_billed = float(self.request.get('units_billed'))
+        lineitem.rate = self.request.get('rate')
+        lineitem.units = self.request.get('units')
+        lineitem.date_worked = datetime.strptime(self.request.get('date'), '%d/%m/%Y')
+        lineitem.invoice = invoice
+        lineitem.put()
+        self.request.redirect('invoice/'+request.id)
 application = webapp.WSGIApplication(
                                      [('/', MainPage),
-                                      ('/invoices', ),
-                                      ('/invoice', AddInvoice),
-                                      (r'invoice/(\d+)', EditInvoice)],
+                                      ('/invoices', MainPage),
+                                      ('/invoice/add', AddInvoice),
+                                      (r'invoice/<id:(\d+)>', EditInvoice)],
                                      debug=True)
 
 def main():

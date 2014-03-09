@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+  </head>
+  <body>
+  
+  	<div>
+  		Last 10 invoices:
+  		<br>
+  	{% if invoices %}
+    	{% for invoice in invoices %}
+    		<table>
+    			<tr>
+    				<td>{{ invoice.description }}</td>
+    				<td>{{ invoice.date_added }} </td>
+    				<td>{% if invoice.sent %}
+    					 Sent
+    				 	{% else %}
+    				 	<b>not</b> sent </td>
+    					{% endif %}
+    				
+    				<td>{% if invoice.void %}
+    					Voided
+    					{% endif %}
+    			</tr>
+    		</table>
+      	{% endfor %}
+	{%endif%}
+	
+    <form action="/invoice/add" method="get">
+      <div><input type="submit" value="Add Invoice"></div>
+    </form>
+
+    <a href="{{ url }}">{{ url_linktext }}</a>
+
+  </body>
+</html>

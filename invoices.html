@@ -1,0 +1,60 @@
+<html>
+  <head>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+  </head>
+  <body>
+  
+  	<div>
+  		Add Invoice.  Please Enter Date in 'mm/dd/yyyy' format, including '/'.
+  		<br>
+  			<form action="/invoice/add" method="post">
+    		<table>
+    			<tr>
+    				<td>
+    					Date Worked:
+    				</td>
+    				<td>
+    					<input type='text' name='date'/>
+    				</td>
+    			</tr>
+    			<tr>
+    				<td>
+    					Number of Units worked:
+    				</td>
+    				<td>
+    					<input type='text' name='units_billed'/>
+    				</td>
+    			</tr>
+    			<tr>
+    				<td>
+    					Hour(s) or Day(s)
+    				</td>
+    				<td>
+    					<select name='units'>
+    					{%for unit in units %}
+    						<option value={{ unit }}>{{ unit }}</option>
+    					{% endfor %}
+    					</select>
+    				</td>
+    			</tr>
+    			<tr>
+    				<td>
+    					rate
+    				</td>
+    				<td>
+    					<input type='text' name='rate'>
+    				</td>
+    			</tr>
+    			<tr>
+    			<td colspan='2'>
+    				 
+      					<div><input type="submit" value="Add Invoice"></div>
+    				
+    		</table>
+    		</form>
+      	
+	
+    <a href="{{ url }}">{{ url_linktext }}</a>
+
+  </body>
+</html>
