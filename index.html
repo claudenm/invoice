@@ -11,6 +11,7 @@
     	{% for invoice in invoices %}
     		<table>
     			<tr>
+				<td> id: {{invoice.key.id}} </td>
     				<td>{{ invoice.description }}</td>
     				<td>{{ invoice.date_added }} </td>
     				<td>{% if invoice.sent %}
@@ -21,8 +22,14 @@
     				
     				<td>{% if invoice.void %}
     					Voided
-    					{% endif %}
+    					{% endif %} 
+				</td>
+				<td>	
+					<form action="/invoice/edit/{{invoice.key.id}}" method="get">
+      					<div><input type="submit" value="Edit Invoice"></div>
+    					</form>
     			</tr>
+			
     		</table>
       	{% endfor %}
 	{%endif%}
