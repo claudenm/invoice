@@ -1,6 +1,7 @@
 import cgi
 import os
 import logging
+import re
 from datetime import datetime
 
 from google.appengine.api import users
@@ -86,8 +87,11 @@ class AddInvoice(webapp.RequestHandler):
 #Edit Invoice
 class EditInvoice(webapp.RequestHandler):
     def get(self):
-        line_items = LineItem.all().filter(invoice=Invoice.get_by_id(request.id))
+
+	invoice=Invoice.get_by_id(int(self.request.GET['id']))
+        line_items = LineItem.all().filter('invoice =', invoice)
         template_values = {
+	    'invoice' : 'invoice',
             'units' : LineItem.unit.choices,
             'items' : line_items
         }
@@ -95,22 +99,33 @@ class EditInvoice(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
     
 
-    def post(self):
-        invoice=Invoice.get_by_id(request.id)
-        lineitem = LineItem()
-        lineitem.units_billed = float(self.request.get('units_billed'))
-        lineitem.rate = self.request.get('rate')
-        lineitem.units = self.request.get('units')
-        lineitem.date_worked = datetime.strptime(self.request.get('date'), '%d/%m/%Y')
-        lineitem.invoice = invoice
-        lineitem.put()
-        self.request.redirect('invoice/'+request.id)
-application = webapp.WSGIApplication(
+#Edit Line Item
+class EditItem(webapp.RequestHandler):
+     def post(self):
+	lineitem = LineItem.get_by_id(self.request.id)
+	lineitem.units_billed = float(self.request.get('units_billed'))
+	lineitem.rate = self.request.get('rate')
+	lineitem.units = self.request.get('units')
+	lineitem.date_worked = datetime.strptime(self.request.get('date'), '%d/%m/%Y')
+	lineitem.invoice = invoice
+	lineitem.put()
+	self.request.redirect('invoice/edit/'+lineitem.invoice.key().id())
+
+
+application = webapp.WSGIApplication([('/', MainPage),
+                                      ('/invoices', MainPage),
+                                      ('/invoice/add', AddInvoice),
+                                      ('/invoice/edit', EditInvoice),
+				      (r'/item/edit/<id:(\d+)>', EditItem)],
+                                     debug=True)
+
+'''application = webapp.WSGIApplication(
                                      [('/', MainPage),
                                       ('/invoices', MainPage),
                                       ('/invoice/add', AddInvoice),
                                       (r'invoice/<id:(\d+)>', EditInvoice)],
-                                     debug=True)
+                                     debug=True)'''
+
 
 def main():
     run_wsgi_app(application)
