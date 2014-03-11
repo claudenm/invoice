@@ -22,7 +22,7 @@ class LineItem(db.Model):
     unit = db.StringProperty(choices= ('hour','hours', 'day', 'days'))
     rate = db.FloatProperty()
     date_worked = db.DateTimeProperty()
-    invoice = db.ReferenceProperty(Invoice,collection_name='invoice' )
+    invoice = db.ReferenceProperty(Invoice,collection_name='line_items' )
     
 class MainPage(webapp.RequestHandler):
     def get(self):
@@ -87,16 +87,16 @@ class AddInvoice(webapp.RequestHandler):
 #Edit Invoice
 class EditInvoice(webapp.RequestHandler):
     def get(self):
-
-	invoice=Invoice.get_by_id(int(self.request.GET['id']))
-        line_items = LineItem.all().filter('invoice =', invoice)
-        template_values = {
-	    'invoice' : 'invoice',
+		invoice=Invoice.get_by_id(int(self.request.GET['id']))
+    		line_items = invoice.line_items.fetch(5)
+    		logging.error(line_items)
+        	template_values = {
+	    	'invoice' : invoice,
             'units' : LineItem.unit.choices,
-            'items' : line_items
+            'line_items' : line_items
         }
-        path = os.path.join(os.path.dirname(__file__), 'index.html')
-        self.response.out.write(template.render(path, template_values))
+        	path = os.path.join(os.path.dirname(__file__), 'edit_invoice.html')
+        	self.response.out.write(template.render(path, template_values))
     
 
 #Edit Line Item
