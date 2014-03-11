@@ -25,7 +25,8 @@
     					{% endif %} 
 				</td>
 				<td>	
-					<form action="/invoice/edit/{{invoice.key.id}}" method="get">
+					<form action="/invoice/edit" method="get">
+						<input type='hidden' name='id' value={{invoice.key.id}}
       					<div><input type="submit" value="Edit Invoice"></div>
     					</form>
     			</tr>

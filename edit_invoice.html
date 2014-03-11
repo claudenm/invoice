@@ -5,12 +5,15 @@
   <body>
   
   	<div>
+  		{% for li in line_items %}
+  			{{li.unit}}
+  		{% endfor %}
   		Items in Current Invoice:
 		
   		<br>
 		{{ invoice.key.id }} {{invoice.description}} created at: {{invoice.date_added}}
     		<table>
-		{% for li in line_items%}
+		{% for li in line_items %}
     			<form action="/invoice/edit/"+{{li.key.id}} method="post">
 			<tr>
     				<td>
@@ -35,7 +38,7 @@
     				<td>
     					<select name='units'>
     					{%for unit in units %}
-    						<option value={{ unit }} {% if %} {{li.unit}} == {{unit}} selected {% endif %}>{{ unit }}</option>
+    						<option value={{ unit }} >{{ unit }}</option>
     					{% endfor %}
     					</select>
     				</td>
