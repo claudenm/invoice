@@ -75,21 +75,22 @@ class AddInvoice(webapp.RequestHandler):
         invoice.put()
         
         lineitem = LineItem()
-        logging.error( 'WTF - ' + str(self.request))
+        logging.error( 'WTF - ' + self.request.get('rate'))
         lineitem.units_billed = float(self.request.get('units_billed'))
         lineitem.rate = float(self.request.get('rate'))
-        lineitem.units = self.request.get('units')
+        lineitem.unit = self.request.get('units')
         lineitem.date_worked = datetime.strptime(self.request.get('date'), '%d/%m/%Y')
         lineitem.invoice = invoice
         lineitem.put()
-        self.redirect('/invoices')
+        self.redirect('/?')
 
 #Edit Invoice
 class EditInvoice(webapp.RequestHandler):
     def get(self):
 		invoice=Invoice.get_by_id(int(self.request.GET['id']))
     		line_items = invoice.line_items.fetch(5)
-    		logging.error(line_items)
+    		for li in line_items:
+    			logging.error(li.rate)
         	template_values = {
 	    	'invoice' : invoice,
             'units' : LineItem.unit.choices,
@@ -101,22 +102,23 @@ class EditInvoice(webapp.RequestHandler):
 
 #Edit Line Item
 class EditItem(webapp.RequestHandler):
-     def post(self):
-	lineitem = LineItem.get_by_id(self.request.id)
-	lineitem.units_billed = float(self.request.get('units_billed'))
-	lineitem.rate = self.request.get('rate')
-	lineitem.units = self.request.get('units')
-	lineitem.date_worked = datetime.strptime(self.request.get('date'), '%d/%m/%Y')
-	lineitem.invoice = invoice
-	lineitem.put()
-	self.request.redirect('invoice/edit/'+lineitem.invoice.key().id())
+
+	def post(self):
+		lineitem = LineItem.get_by_id(self.request.id)
+		lineitem.units_billed = float(self.request.get('units_billed'))
+		lineitem.rate = self.request.get('rate')
+		lineitem.units = self.request.get('units')
+		lineitem.date_worked = datetime.strptime(self.request.get('date'), '%d/%m/%Y')
+		lineitem.invoice = invoice
+		lineitem.put()
+		self.request.redirect('/')
 
 
 application = webapp.WSGIApplication([('/', MainPage),
                                       ('/invoices', MainPage),
                                       ('/invoice/add', AddInvoice),
                                       ('/invoice/edit', EditInvoice),
-				      (r'/item/edit/<id:(\d+)>', EditItem)],
+				      				  ('/item/edit', EditItem)],
                                      debug=True)
 
 '''application = webapp.WSGIApplication(

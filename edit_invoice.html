@@ -5,58 +5,56 @@
   <body>
   
   	<div>
-  		{% for li in line_items %}
-  			{{li.unit}}
-  		{% endfor %}
+  		
   		Items in Current Invoice:
 		
   		<br>
-		{{ invoice.key.id }} {{invoice.description}} created at: {{invoice.date_added}}
+	
     		<table>
 		{% for li in line_items %}
-    			<form action="/invoice/edit/"+{{li.key.id}} method="post">
+    			<form action="/invoice/edit" method="post">
 			<tr>
     				<td>
     					Date Worked:
     				</td>
     				<td>
-    					<input type='text' name='date' value ={{li.date_worked}}/>
+    					<input type='text' name='date' value ={{li.date_worked|date:"SHORT_DATE_FORMAT"}}></input>
     				</td>
-    			</tr>
-    			<tr>
     				<td>
     					Number of Units worked:
     				</td>
     				<td>
-    					<input type='text' name='units_billed' value={{li.units_billed}}/>
+    					<input type='text' name='units_billed' value={{li.units_billed}}> </input>
     				</td>
-    			</tr>
-    			<tr>
     				<td>
     					Hour(s) or Day(s)
     				</td>
     				<td>
     					<select name='units'>
     					{%for unit in units %}
+    						{% ifequal li.unit unit %}
+    						<option value={{ unit }}  selected>{{ unit }}</option>
+    						{%else%}
     						<option value={{ unit }} >{{ unit }}</option>
+    						{% endifequal %}
     					{% endfor %}
     					</select>
     				</td>
-    			</tr>
-    			<tr>
     				<td>
     					rate
     				</td>
     				<td>
-    					<input type='text' name='rate' {{ li.rate }}>
+    					<input type='text' name='rate' value={{ li.rate }}>
     				</td>
-    			</tr>
-    			<tr>
-    			<td colspan='2'>
 
-    				 
-      					<div><input type="submit" value="Edit Record"></div>
-    			{% endfor %}				
+    				 <td>
+      					<div><input type="submit" value="Edit Record">
+      					<input type="hidden" name='id' value={{li.key.id}} > </input>
+      				</td>
+      				</div>
+      			</tr>
+    			{% endfor %}
+    							
     		</table>
     
       	
