@@ -10,9 +10,11 @@
 		
   		<br>
 	
-    		<table>
+    	
 		{% for li in line_items %}
-    			<form action="/invoice/edit" method="post">
+      <table>
+    	<form action="/item/update" method="post">
+            <input type='hidden' name= 'id' value={{li.key.id}}> </input>		
 			<tr>
     				<td>
     					Date Worked:
@@ -46,16 +48,20 @@
     				<td>
     					<input type='text' name='rate' value={{ li.rate }}>
     				</td>
-
+          
     				 <td>
-      					<div><input type="submit" value="Edit Record">
-      					<input type="hidden" name='id' value={{li.key.id}} > </input>
+    				 	
+      						<input type="submit" value="Edit Record">
+
+      					
       				</td>
       				</div>
       			</tr>
+            </table>
+      			</form>
     			{% endfor %}
     							
-    		</table>
+    		
     
       	
 	
