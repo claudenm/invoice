@@ -1,17 +1,23 @@
 <html>
   <head>
-    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+    <link type="text/css" rel="stylesheet" href="/stylesheets/bootstrap.css" />
   </head>
   <body>
   
   	<div>
-  		Last 10 invoices:
+  		Last {{count}} invoice(s):
   		<br>
   	{% if invoices %}
-    	{% for invoice in invoices %}
-    		<table>
+    	
+    		<table class='table table-striped'>
+          <th>id</th>
+          <th>description</th>
+          <th>date added</th>
+          <th> sent? </th>
+          <th> edit </th>
+          {% for invoice in invoices %}
     			<tr>
-				<td> id: {{invoice.key.id}} </td>
+				<td> {{invoice.key.id}} </td>
     				<td>{{ invoice.description }}</td>
     				<td>{{ invoice.date_added }} </td>
     				<td>{% if invoice.sent %}
@@ -30,9 +36,9 @@
       					<div><input type="submit" value="Edit Invoice"></div>
     					</form>
     			</tr>
-			
+			 {% endfor %}
     		</table>
-      	{% endfor %}
+      	
 	{%endif%}
 	
     <form action="/invoice/add" method="get">

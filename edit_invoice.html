@@ -1,20 +1,20 @@
 <html>
   <head>
-    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+     <link type="text/css" rel="stylesheet" href="/stylesheets/bootstrap.css" />
   </head>
   <body>
   
   	<div>
   		
   		Items in Current Invoice:
-		
+		  
   		<br>
 	
     	
 		{% for li in line_items %}
-      <table>
+      <table class='table'>
     	<form action="/item/update" method="post">
-            <input type='hidden' name= 'id' value={{li.key.id}}> </input>		
+            <input type='hidden' name="id" value={{li.key.id}}> </input>		
 			<tr>
     				<td>
     					Date Worked:
@@ -60,6 +60,10 @@
             </table>
       			</form>
     			{% endfor %}
+          <form action = "/item/add" method = 'get'>
+            <input type= 'hidden' value= {{invoice.key.id}} name='invoice_id'> </input>
+            <input type ='submit' value='Add another item to this invoice'>
+          </form>
     							
     		
     
