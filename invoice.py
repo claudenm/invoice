@@ -87,7 +87,7 @@ class AddInvoice(webapp.RequestHandler):
         lineitem.date_worked = datetime.strptime(self.request.get('date'), '%d/%m/%Y')
         lineitem.invoice = invoice
         lineitem.put()
-        self.redirect(self.request.referer)
+        self.redirect('/')
 
 #Edit Invoice
 class EditInvoice(webapp.RequestHandler):
