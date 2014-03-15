@@ -7,7 +7,7 @@ from datetime import datetime
 from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
-from google.appengine.ext import db
+from google.appengine.ext import db, ndb
 from google.appengine.ext.webapp import template
 
 class Invoice(db.Model):
@@ -24,10 +24,14 @@ class LineItem(db.Model):
     date_worked = db.DateTimeProperty()
     invoice = db.ReferenceProperty(Invoice,collection_name='line_items' )
 
+def invoice_key(invoice_name='default_invoice'):
+    return ndb.Key('invoice', invoice_name)
+
 class MainPage(webapp.RequestHandler):
     def get(self):
         invoices_query = Invoice.all().order('-date_added')
         invoices = invoices_query.fetch(10)
+
 
         if users.get_current_user():
             url = users.create_logout_url(self.request.uri)
@@ -40,6 +44,7 @@ class MainPage(webapp.RequestHandler):
         'invoices': invoices,
         'url': url,
         'url_linktext': url_linktext,
+        'count' : len(invoices)
         }
 
         path = os.path.join(os.path.dirname(__file__), 'index.html')
@@ -82,7 +87,7 @@ class AddInvoice(webapp.RequestHandler):
         lineitem.date_worked = datetime.strptime(self.request.get('date'), '%d/%m/%Y')
         lineitem.invoice = invoice
         lineitem.put()
-        self.redirect('/?')
+        self.redirect(self.request.referer)
 
 #Edit Invoice
 class EditInvoice(webapp.RequestHandler):
@@ -114,13 +119,36 @@ class EditItem(webapp.RequestHandler):
         lineitem.put()
         self.redirect('/')
 
+class AddItem(webapp.RequestHandler):
+    def get(self):
+        invoice = Invoice.get_by_id(int(self.request.GET['invoice_id']))
+        template_values = {
+        'invoice' : invoice,
+        'units' : LineItem.unit.choices
+            }
+            
+        path = os.path.join(os.path.dirname(__file__), 'add_item.html')
+        self.response.out.write(template.render(path, template_values))
+
+    def post(self):
+        invoice = Invoice.get_by_id(int(self.request.POST['invoice_id']))
+        li = LineItem()
+        li.units_billed = float(self.request.get('units_billed'))
+        li.rate = float(self.request.get('rate'))
+        li.units = self.request.get('units')
+        li.date_worked = datetime.strptime(self.request.get('date'), '%d/%m/%Y')
+        li.invoice = invoice
+        li.put()
+        redirect_url = '/item/edit?id=' + str(invoice.key().id())
+        self.redirect(redirect_url)
 
 
 application = webapp.WSGIApplication([('/', MainPage),
                           ('/invoices', MainPage),
                           ('/invoice/add', AddInvoice),
                           ('/item/update', EditItem),
-                          ('/item/edit', EditItem)
+                          ('/item/edit', EditItem),
+                          ('/item/add', AddItem)
 	      				  ],
                          debug=True)
 

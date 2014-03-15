@@ -1,0 +1,61 @@
+<html>
+  <head>
+     <link type="text/css" rel="stylesheet" href="/stylesheets/bootstrap.css" />
+  </head>
+  <body>
+  
+  	<div>
+  		Add Another Item To Invoice {{invoice.key.id}}.  Please Enter Date in 'mm/dd/yyyy' format, including '/'.
+  		<br>
+  			<form action="/item/add" method="post">
+            <input type="hidden" name="invoice_id" value={{invoice.key.id}}> </input>
+    		<table>
+    			<tr>
+    				<td>
+    					Date Worked:
+    				</td>
+    				<td>
+    					<input type='text' name='date'/>
+    				</td>
+    			</tr>
+    			<tr>
+    				<td>
+    					Number of Units worked:
+    				</td>
+    				<td>
+    					<input type='text' name='units_billed'/>
+    				</td>
+    			</tr>
+    			<tr>
+    				<td>
+    					Hour(s) or Day(s)
+    				</td>
+    				<td>
+    					<select name='units'>
+    					{%for unit in units %}
+    						<option value={{ unit }}>{{ unit }}</option>
+    					{% endfor %}
+    					</select>
+    				</td>
+    			</tr>
+    			<tr>
+    				<td>
+    					rate
+    				</td>
+    				<td>
+    					<input type='text' name='rate'>
+    				</td>
+    			</tr>
+    			<tr>
+    			<td colspan='2'>
+    				 
+      					<div><input type="submit" value="Add Item"></div>
+    				
+    		</table>
+    		</form>
+      	
+	
+    <a href="{{ url }}">{{ url_linktext }}</a>
+
+  </body>
+</html>
