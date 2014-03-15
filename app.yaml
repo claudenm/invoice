@@ -1,13 +1,12 @@
-application: invoice
+application: invoice-jesse
 version: 1
 runtime: python27
 api_version: 1
 threadsafe: no
 
 handlers:
-- url: /favicon\.ico
-  static_files: favicon.ico
-  upload: favicon\.ico
+- url: /stylesheets
+  static_dir: stylesheets
 
 - url: /.*
   script: invoice.py
