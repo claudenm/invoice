@@ -1,0 +1,100 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="/stylesheets/css/style.css"></link>
+		<link rel="stylesheet" href="/stylesheets/css/print.css"></link>
+		<style type='text/css'> </style>
+		<style type='text/css'> </style>
+	</head>
+	<body>
+		<div id="page=wrap"/>
+			<textarea id="header">
+				INVOICE
+			</textarea>
+			<div id="identity">
+				<textarea id ="address">
+					Jesse Mendelson
+					71 Wolcott St.
+					Apt 202
+					Brooklyn, NY 11231
+					(917)-763-2124
+				</textarea>
+				<div id='logo'>
+						<div id="logoctr"></div>
+						<div id="logohelp"></div>
+				</div>
+			</div>
+			<div style="clear:both"></div>
+			<div id="customer">
+				<textarea id ="customer-title">
+				</textarea>
+			<table id ="meta">
+				<tbody>
+					<tr>
+						<td class="meta-head"> Invoice # </td>
+						<td>
+							<textarea>{{invoice.key.id}}</textarea>
+						</td>
+					</tr>
+					<tr>
+						<td class="meta-head"> Date </td>
+						<td>
+							<textarea>{{Date.now}}</textarea>
+						</td>
+					</tr>
+					<tr>
+						<td class="meta-head"> Amount Due </td>
+						<td>
+							<textarea>{{invoice.total}}</textarea>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<table id='items'>
+				<tbody>
+					<tr>
+				      <th>Date Worked</th>
+				      <th>Time Worked</th>
+				      <th>Unit</th>
+				      <th>Price</th>
+				      
+		  			</tr>
+		  			{%for li in lineitems%}
+		  				<tr class='item-row'>
+		  					<td>
+		  						<textarea>
+		  							{{li.date_worked|date:"SHORT_DATE_FORMAT"}}
+		  						</textarea>
+		  					</td>
+		  					<td>
+		  						<textarea>
+		  							{{li.units_billed}}
+		  						</textarea>
+		  					</td>
+		  					<td>
+		  						<textarea>
+		  							{{li.units}}
+		  						</textarea>
+		  					</td>
+		  					<td>
+		  						<textarea>
+		  							{{li.rate}}
+		  						</textarea>
+		  					</td>
+		  				</tr>
+		  				{%endfor}
+		  				<tr>
+		     			 <td colspan="2" class="blank"> </td>
+		      			<td colspan="2" class="total-line balance">Balance Due</td>
+		      			<td class="total-value balance"><div class="due">{{invoice.total}}</div></td>
+		  </tr>
+		  			</tbody>
+		  		</table>
+		  	</div>
+		  </div>
+		</body>
+		</html>
+				  				
+
+
+
+
