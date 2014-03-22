@@ -35,6 +35,13 @@
 						<input type='hidden' name='id' value={{invoice.key.id}}
       					<div><input type="submit" value="Edit Invoice"></div>
     					</form>
+        </td>
+        <td>
+          <form action="/invoice/print" method="get">
+            <input type='hidden' name='id' value={{invoice.key.id}}> </input>
+            <input type="submit" value="Print Invoice">
+          </input>
+          </form>
     			</tr>
 			 {% endfor %}
     		</table>
