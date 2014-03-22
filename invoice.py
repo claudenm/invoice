@@ -142,13 +142,28 @@ class AddItem(webapp.RequestHandler):
         redirect_url = '/item/edit?id=' + str(invoice.key().id())
         self.redirect(redirect_url)
 
+class PrintInvoice(webapp.RequestHandler):
+    def get(self):
+        invoice = Invoice.get_by_id(int(self.request.get('id')))
+        line_items = invoice.line_items.fetch(5)
+        for li in line_items:
+            logging.error(li.rate)
+        template_values = {
+        'invoice' : invoice,
+        'units' : LineItem.unit.choices,
+        'line_items' : line_items
+            }
+        path = os.path.join(os.path.dirname(__file__), 'print_invoice.html')
+        self.response.out.write(template.render(path, template_values))
+
 
 application = webapp.WSGIApplication([('/', MainPage),
                           ('/invoices', MainPage),
                           ('/invoice/add', AddInvoice),
                           ('/item/update', EditItem),
                           ('/item/edit', EditItem),
-                          ('/item/add', AddItem)
+                          ('/item/add', AddItem),
+                          ('/invoice/print', PrintInvoice)
 	      				  ],
                          debug=True)
 
