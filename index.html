@@ -15,21 +15,18 @@
           <th>date added</th>
           <th> sent? </th>
           <th> edit </th>
+          <th>print</th>
           {% for invoice in invoices %}
     			<tr>
 				<td> {{invoice.key.id}} </td>
     				<td>{{ invoice.description }}</td>
     				<td>{{ invoice.date_added }} </td>
-    				<td>{% if invoice.sent %}
+    				<td>{% if invoice.total %}
     					 Sent
     				 	{% else %}
     				 	<b>not</b> sent </td>
     					{% endif %}
     				
-    				<td>{% if invoice.void %}
-    					Voided
-    					{% endif %} 
-				</td>
 				<td>	
 					<form action="/item/edit" method="get">
 						<input type='hidden' name='id' value={{invoice.key.id}}
@@ -42,6 +39,7 @@
             <input type="submit" value="Print Invoice">
           </input>
           </form>
+        </td>
     			</tr>
 			 {% endfor %}
     		</table>
