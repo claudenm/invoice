@@ -16,6 +16,11 @@ class Invoice(db.Model):
     sent = db.BooleanProperty()
     void = db.BooleanProperty()
 
+    @property
+    def total(self):
+        line_items = self.line_items.run()
+        total = sum([li.units_billed*li.rate for li in line_items])
+        return total
 
 class LineItem(db.Model):
     units_billed=db.FloatProperty()
@@ -23,6 +28,9 @@ class LineItem(db.Model):
     rate = db.FloatProperty()
     date_worked = db.DateTimeProperty()
     invoice = db.ReferenceProperty(Invoice,collection_name='line_items' )
+
+
+
 
 def invoice_key(invoice_name='default_invoice'):
     return ndb.Key('invoice', invoice_name)
@@ -151,7 +159,7 @@ class PrintInvoice(webapp.RequestHandler):
         template_values = {
         'invoice' : invoice,
         'units' : LineItem.unit.choices,
-        'line_items' : line_items
+        'line_items' : line_items,
             }
         path = os.path.join(os.path.dirname(__file__), 'print_invoice.html')
         self.response.out.write(template.render(path, template_values))

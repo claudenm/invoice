@@ -1,33 +1,39 @@
+<!DOCTYPE html>
 <html>
 	<head>
+		<meta charset="UTF-8">
 		<link rel="stylesheet" href="/stylesheets/css/style.css"></link>
 		<link rel="stylesheet" href="/stylesheets/css/print.css"></link>
 		<style type='text/css'> </style>
 		<style type='text/css'> </style>
 	</head>
 	<body>
-		<div id="page=wrap"/>
-			<textarea id="header">
-				INVOICE
+		<div id="page-wrap">
+			<textarea id="header">INVOICE
 			</textarea>
 			<div id="identity">
-				<textarea id ="address">
+				<label id ="address">
 					Jesse Mendelson
+					<br>
 					71 Wolcott St.
+					<br>
 					Apt 202
+					<br>
 					Brooklyn, NY 11231
+					<br>
 					(917)-763-2124
-				</textarea>
+				</label>
 				<div id='logo'>
 						<div id="logoctr"></div>
 						<div id="logohelp"></div>
+						<img id="image"></img>
 				</div>
 			</div>
 			<div style="clear:both"></div>
 			<div id="customer">
 				<textarea id ="customer-title">
 				</textarea>
-			<table id ="meta">
+				<table id ="meta">
 				<tbody>
 					<tr>
 						<td class="meta-head"> Invoice # </td>
@@ -38,58 +44,61 @@
 					<tr>
 						<td class="meta-head"> Date </td>
 						<td>
-							<textarea>{{Date.now}}</textarea>
+							<textarea>{% now "m/d/Y"%}</textarea>
 						</td>
 					</tr>
 					<tr>
 						<td class="meta-head"> Amount Due </td>
 						<td>
-							<textarea>{{invoice.total}}</textarea>
+							<textarea>${{invoice.total}}</textarea>
 						</td>
 					</tr>
 				</tbody>
-			</table>
+				</table>
+			</div>
+
 			<table id='items'>
 				<tbody>
 					<tr>
 				      <th>Date Worked</th>
-				      <th>Time Worked</th>
-				      <th>Unit</th>
+				      <th>Units Worked</th>
 				      <th>Price</th>
+				      <th>Description</th>
 				      
 		  			</tr>
 		  			{%for li in line_items%}
 		  				<tr class='item-row'>
-		  					<td>
-		  						<textarea>
+		  					<td class='item-name'>
+		  						<label>
 		  							{{li.date_worked|date:"SHORT_DATE_FORMAT"}}
-		  						</textarea>
+		  						</label>
+		  					</td>
+		  					<td class='description' text-align='center'>
+		  						<label>
+		  							{{li.units_billed}} {{li.unit}}
+		  						</label>
+		  					</td>
+		  					<td> 
+		  						<label class="qty">
+		  							${{li.rate}}
+		  						</label>
 		  					</td>
 		  					<td>
-		  						<textarea>
-		  							{{li.units_billed}}
-		  						</textarea>
-		  					</td>
-		  					<td>
-		  						<textarea>
-		  							{{li.units}}
-		  						</textarea>
-		  					</td>
-		  					<td>
-		  						<textarea>
-		  							{{li.rate}}
-		  						</textarea>
+		  						<label class="price">
+		  							Filler
+		  						</label>
 		  					</td>
 		  				</tr>
 		  				{%endfor%}
 		  				<tr>
-		     			 <td colspan="2" class="blank"> </td>
-		      			<td colspan="2" class="total-line balance">Balance Due</td>
-		      			<td class="total-value balance"><div class="due">{{invoice.total}}</div></td>
-		  </tr>
+		     				<td colspan="2" class="blank"> </td>
+		      				<td colspan="1" class="total-line balance">Balance Due</td>
+		      				<td class="total-value balance"><div class="due">${{invoice.total}}</div>
+		      				</td>
+		 				</tr>
+
 		  			</tbody>
 		  		</table>
-		  	</div>
 		  </div>
 		</body>
 		</html>
