@@ -10,11 +10,12 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext import db, ndb
 from google.appengine.ext.webapp import template
 
-class Invoice(db.Model):
-    description = db.StringProperty(multiline=True)
-    date_added = db.DateTimeProperty(auto_now_add=True)
-    sent = db.BooleanProperty()
-    void = db.BooleanProperty()
+
+class Invoice(ndb.Model):
+    description = ndb.StringProperty()
+    date_added = ndb.DateTimeProperty(auto_now_add=True)
+    sent = ndb.BooleanProperty()
+    void = ndb.BooleanProperty()
 
     @property
     def total(self):
@@ -22,23 +23,26 @@ class Invoice(db.Model):
         total = sum([li.units_billed*li.rate for li in line_items])
         return total
 
-class LineItem(db.Model):
-    units_billed=db.FloatProperty()
-    unit = db.StringProperty(choices= ('hour','hours', 'day', 'days'))
-    rate = db.FloatProperty()
-    date_worked = db.DateTimeProperty()
-    invoice = db.ReferenceProperty(Invoice,collection_name='line_items' )
+class LineItem(ndb.Model):
+    units_billed=ndb.FloatProperty()
+    unit = ndb.StringProperty(choices= ('Hour','Hours', 'Day', 'Days'))
+    rate = ndb.FloatProperty()
+    date_worked = ndb.DateTimeProperty()
+    invoice = ndb.KeyProperty(kind="Invoice")
 
 
 
 
 def invoice_key(invoice_name='default_invoice'):
-    return ndb.Key('invoice', invoice_name)
+	if users.get_current_user():
+		return ndb.Key('invoice', users.get_current_user())
+    	return ndb.Key('invoice', invoice_name)
 
 class MainPage(webapp.RequestHandler):
     def get(self):
-        invoices_query = Invoice.all().order('-date_added')
+        invoices_query = Invoice.query(ancestor=invoice_key()).order(-Invoice.date_added)
         invoices = invoices_query.fetch(10)
+	
 
 
         if users.get_current_user():
@@ -76,14 +80,15 @@ class AddInvoice(webapp.RequestHandler):
 
     def get(self):
         template_values = {
-        'units' : LineItem.unit.choices
+        'units' : LineItem.unit._choices
         }
 
         path = os.path.join(os.path.dirname(__file__), 'invoices.html')
         self.response.out.write(template.render(path, template_values))
 
     def post(self):
-        invoice = Invoice()
+        invoice = Invoice(parent=invoice_key())
+	
         invoice.description = self.request.get('description')
         invoice.put()
 
@@ -93,7 +98,7 @@ class AddInvoice(webapp.RequestHandler):
         lineitem.rate = float(self.request.get('rate'))
         lineitem.unit = self.request.get('units')
         lineitem.date_worked = datetime.strptime(self.request.get('date'), '%d/%m/%Y')
-        lineitem.invoice = invoice
+        lineitem.invoice = invoice.key
         lineitem.put()
         self.redirect('/')
 
@@ -111,7 +116,7 @@ class EditItem(webapp.RequestHandler):
             logging.error(li.rate)
         template_values = {
         'invoice' : invoice,
-        'units' : LineItem.unit.choices,
+        'units' : LineItem.unit._choices,
         'line_items' : line_items
             }
         path = os.path.join(os.path.dirname(__file__), 'edit_invoice.html')
@@ -132,7 +137,7 @@ class AddItem(webapp.RequestHandler):
         invoice = Invoice.get_by_id(int(self.request.GET['invoice_id']))
         template_values = {
         'invoice' : invoice,
-        'units' : LineItem.unit.choices
+        'units' : LineItem.unit._choices
             }
             
         path = os.path.join(os.path.dirname(__file__), 'add_item.html')
@@ -158,7 +163,7 @@ class PrintInvoice(webapp.RequestHandler):
             logging.error(li.rate)
         template_values = {
         'invoice' : invoice,
-        'units' : LineItem.unit.choices,
+        'units' : LineItem.unit._choices,
         'line_items' : line_items,
             }
         path = os.path.join(os.path.dirname(__file__), 'print_invoice.html')
