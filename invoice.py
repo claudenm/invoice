@@ -23,6 +23,10 @@ class Invoice(ndb.Model):
         total = sum([li.units_billed*li.rate for li in line_items])
         return total
 
+    @property
+    def line_items(self):
+	return LineItem.gql('where invoice = :1', self.key)
+
 class LineItem(ndb.Model):
     units_billed=ndb.FloatProperty()
     unit = ndb.StringProperty(choices= ('Hour','Hours', 'Day', 'Days'))
@@ -34,8 +38,9 @@ class LineItem(ndb.Model):
 
 
 def invoice_key(invoice_name='default_invoice'):
-	if users.get_current_user():
-		return ndb.Key('invoice', users.get_current_user())
+	user = users.get_current_user()	
+	if user:
+		return ndb.Key('invoice', user.user_id())
     	return ndb.Key('invoice', invoice_name)
 
 class MainPage(webapp.RequestHandler):
@@ -65,8 +70,9 @@ class MainPage(webapp.RequestHandler):
 
 class Invoices(webapp.RequestHandler):
     def get(self):
-        invoices_query = Invoice.all().order('-date')
-        invoices = invoice_query.fetch(10)
+	invoices_query = Invoice.query(ancestor=invoice_key()).order(-Invoice.date_added)
+        invoices = invoices_query.fetch(10)
+        
 
 
         template_values = {
@@ -92,7 +98,7 @@ class AddInvoice(webapp.RequestHandler):
         invoice.description = self.request.get('description')
         invoice.put()
 
-        lineitem = LineItem()
+        lineitem = LineItem(parent=invoice_key())
         logging.error( 'WTF - ' + self.request.get('rate'))
         lineitem.units_billed = float(self.request.get('units_billed'))
         lineitem.rate = float(self.request.get('rate'))
@@ -110,10 +116,9 @@ class EditInvoice(webapp.RequestHandler):
 #Edit Line Item
 class EditItem(webapp.RequestHandler):
     def get(self):
-        invoice=Invoice.get_by_id(int(self.request.GET['id']))
-        line_items = invoice.line_items.fetch(5)
-        for li in line_items:
-            logging.error(li.rate)
+	logging.error(users.get_current_user())
+        invoice=Invoice.get_by_id(int(self.request.GET['id']),  parent=invoice_key())
+        line_items = invoice.line_items.fetch()
         template_values = {
         'invoice' : invoice,
         'units' : LineItem.unit._choices,
@@ -124,17 +129,17 @@ class EditItem(webapp.RequestHandler):
 
     def post(self):
         logging.error(self)
-        lineitem = LineItem.get_by_id(int(self.request.POST['id']))
+        lineitem = LineItem.get_by_id(int(self.request.POST['id']),  parent=invoice_key())
         lineitem.units_billed = float(self.request.get('units_billed'))
         lineitem.rate = float(self.request.get('rate'))
-        lineitem.units = self.request.get('units')
+        lineitem.unit = self.request.get('units')
         lineitem.date_worked = datetime.strptime(self.request.get('date'), '%d/%m/%Y')
         lineitem.put()
         self.redirect('/')
 
 class AddItem(webapp.RequestHandler):
     def get(self):
-        invoice = Invoice.get_by_id(int(self.request.GET['invoice_id']))
+        invoice = Invoice.get_by_id(int(self.request.GET['invoice_id']), parent=invoice_key())
         template_values = {
         'invoice' : invoice,
         'units' : LineItem.unit._choices
@@ -144,21 +149,24 @@ class AddItem(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
 
     def post(self):
-        invoice = Invoice.get_by_id(int(self.request.POST['invoice_id']))
-        li = LineItem()
+	logging.error(self.request.POST['invoice_id'])
+        invoice = Invoice.get_by_id(int(self.request.POST['invoice_id']), parent=invoice_key())
+	logging.error(invoice)
+        li = LineItem(parent=invoice_key())
         li.units_billed = float(self.request.get('units_billed'))
         li.rate = float(self.request.get('rate'))
         li.units = self.request.get('units')
         li.date_worked = datetime.strptime(self.request.get('date'), '%d/%m/%Y')
-        li.invoice = invoice
+        li.invoice = invoice.key
         li.put()
-        redirect_url = '/item/edit?id=' + str(invoice.key().id())
+        redirect_url = '/item/edit?id=' + str(invoice.key.id())
         self.redirect(redirect_url)
 
 class PrintInvoice(webapp.RequestHandler):
     def get(self):
-        invoice = Invoice.get_by_id(int(self.request.get('id')))
-        line_items = invoice.line_items.fetch(5)
+	logging.error(self.request.get('id'))
+        invoice = Invoice.get_by_id(int(self.request.get('id')),  parent=invoice_key())
+        line_items = invoice.line_items
         for li in line_items:
             logging.error(li.rate)
         template_values = {
